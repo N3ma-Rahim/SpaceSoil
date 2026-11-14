@@ -1,122 +1,137 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+const crops = {
+  Maize: { water: 78, days: 110, soil: -3, color: 'gold', note: 'Thrives in warm weather; higher water demand.' },
+  Sorghum: { water: 42, days: 95, soil: 1, color: 'coral', note: 'Heat tolerant and relatively water efficient.' },
+  Wheat: { water: 55, days: 100, soil: -1, color: 'wheat', note: 'Cool-season grain with moderate water needs.' },
+  Soybean: { water: 62, days: 105, soil: 5, color: 'leaf', note: 'Legume that can support soil nitrogen over time.' },
+  'Cover crop': { water: 30, days: 65, soil: 9, color: 'mint', note: 'Builds soil cover and organic matter; not harvested for grain.' },
 }
-
+const starterPlots = [
+  { id: 'A1', crop: 'Maize', growth: 2, soil: 68, water: 58, health: 76 },
+  { id: 'A2', crop: 'Soybean', growth: 3, soil: 79, water: 71, health: 88 },
+  { id: 'A3', crop: 'Sorghum', growth: 1, soil: 72, water: 82, health: 91 },
+  { id: 'B1', crop: 'Wheat', growth: 4, soil: 61, water: 45, health: 64 },
+  { id: 'B2', crop: null, growth: 0, soil: 74, water: 64, health: 81 },
+  { id: 'B3', crop: 'Cover crop', growth: 2, soil: 83, water: 77, health: 93 },
+]
+const navItems = [
+  ['farm', 'My Farm', '⌂'], ['plant', 'Plant & Grow', '✳'], ['strategies', 'Explore Strategies', '↗'], ['missions', 'Missions', '◎'], ['science', 'Science & Data', '◉'],
+]
+const strategies = [
+  { id: 'balanced', name: 'Current practice', tag: 'Your baseline', water: '58%', soil: '+2 pts', yield: 'Steady', detail: 'A balanced mix of grains and legumes spreads risk across the farm.' },
+  { id: 'water', name: 'Water-wise rotation', tag: 'Lower water use', water: '−24%', soil: '+4 pts', yield: 'Moderate', detail: 'More sorghum and cover crops reduce demand while protecting soil.' },
+  { id: 'soil', name: 'Soil builder', tag: 'Soil first', water: '+8%', soil: '+9 pts', yield: 'Building', detail: 'A legume and cover-crop sequence prioritizes soil condition for future seasons.' },
+]
+const missions = [
+  { place: 'Fresno County, California', title: 'Water under pressure', label: 'Water stress', icon: '◌', text: 'A dry season is tightening the farm’s water budget. Can you protect crop health without using more water?' },
+  { place: 'Ludhiana, India', title: 'Heat on the horizon', label: 'Heat stress', icon: '☼', text: 'Warmer days are arriving earlier. Explore a rotation that can handle heat and keep the soil covered.' },
+  { place: 'Gezira, Sudan', title: 'Keep the soil alive', label: 'Soil health', icon: '⌁', text: 'Repeated planting has depleted this field. Rebuild soil resilience while keeping the farm productive.' },
+]
+const stages = ['Prepared', 'Seedling', 'Growing', 'Developing', 'Mature', 'Ready']
+const initial = { farmName: 'Willow Creek Farm', season: 2, year: 2026, rainfall: 42, temperature: 29, selected: 'A2', strategy: 'balanced', location: 'Central Valley, California', area: 48, soilType: 'Loam', irrigation: 'Drip irrigation', goals: { Water: 5, Soil: 4, Yield: 3, Income: 3 }, plots: starterPlots, started: true }
+function loadFarm() {
+  try { const saved = localStorage.getItem('spacesoil-farm-v1'); if (saved) return { ...initial, ...JSON.parse(saved) } } catch { /* ignore invalid saved demo state */ }
+  return initial
+}
+function Icon({ children, className = '' }) { return <span aria-hidden="true" className={`icon ${className}`}>{children}</span> }
+function App() {
+  const [farm, setFarm] = useState(loadFarm)
+  const [view, setView] = useState('farm')
+  const [cropChoice, setCropChoice] = useState('Sorghum')
+  const [showSetup, setShowSetup] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [farmDraft, setFarmDraft] = useState({ farmName: farm.farmName, location: farm.location, area: farm.area, soilType: farm.soilType, irrigation: farm.irrigation })
+  useEffect(() => { localStorage.setItem('spacesoil-farm-v1', JSON.stringify(farm)) }, [farm])
+  const selectedPlot = farm.plots.find((plot) => plot.id === farm.selected) || farm.plots[0]
+  const avgSoil = Math.round(farm.plots.reduce((sum, plot) => sum + plot.soil, 0) / farm.plots.length)
+  const avgHealth = Math.round(farm.plots.reduce((sum, plot) => sum + plot.health, 0) / farm.plots.length)
+  const waterUse = Math.round(farm.plots.reduce((sum, plot) => sum + (plot.crop ? crops[plot.crop].water * (100 - plot.water) / 100 : 12), 0) / farm.plots.length)
+  const advisor = useMemo(() => {
+    if (farm.rainfall < 35 || farm.plots.some((plot) => plot.water < 40 && plot.crop)) return 'Rainfall is running low. Your sorghum and cover crops can help ease pressure on the water budget this season.'
+    if (avgSoil < 65) return 'A few plots could use a soil-building rotation. Legumes and cover crops help protect the ground between harvests.'
+    if (farm.temperature >= 32) return 'High temperatures may slow crop development. Check water levels and consider heat-tolerant crops like sorghum.'
+    return 'Your rotation is looking balanced. A legume in the mix is helping support soil health while you grow this season.'
+  }, [farm, avgSoil])
+  const announce = (message) => { setNotice(message); window.setTimeout(() => setNotice(''), 2600) }
+  const updatePlot = (id, transform) => setFarm((previous) => ({ ...previous, plots: previous.plots.map((plot) => plot.id === id ? transform(plot) : plot) }))
+  const plantSelected = (crop = cropChoice) => {
+    updatePlot(farm.selected, (plot) => ({ ...plot, crop, growth: 1, health: Math.max(35, Math.min(100, plot.health + 5)), water: Math.max(25, plot.water - 7) }))
+    announce(`${crop} planted in plot ${farm.selected}`)
+  }
+  const advanceSeason = () => {
+    setFarm((previous) => ({ ...previous, season: previous.season % 4 + 1, year: previous.season === 4 ? previous.year + 1 : previous.year, rainfall: Math.max(18, Math.min(78, previous.rainfall + (previous.season % 2 ? -7 : 5))), temperature: Math.max(22, Math.min(37, previous.temperature + (previous.season === 2 ? 2 : -1))), plots: previous.plots.map((plot) => {
+      if (!plot.crop) return { ...plot, soil: Math.min(100, plot.soil + 2), water: Math.min(100, plot.water + 12) }
+      const crop = crops[plot.crop]
+      const water = Math.max(8, Math.min(100, plot.water + previous.rainfall * 0.4 - crop.water * 0.3))
+      const heatPenalty = previous.temperature > 32 && !['Sorghum', 'Cover crop'].includes(plot.crop) ? 9 : 0
+      const waterPenalty = water < 35 ? 12 : water < 55 ? 5 : 0
+      const health = Math.max(20, Math.min(100, plot.health + (water > 55 ? 4 : -4) - heatPenalty - waterPenalty))
+      return { ...plot, growth: Math.min(5, plot.growth + 1), water, health, soil: Math.max(25, Math.min(100, plot.soil + crop.soil)) }
+    }) }))
+    announce('A new season begins. Conditions and crop growth have changed.')
+  }
+  const harvest = (id) => {
+    const plot = farm.plots.find((item) => item.id === id)
+    if (!plot?.crop) return announce('Plant a crop here before harvesting.')
+    updatePlot(id, (item) => ({ ...item, crop: null, growth: 0, soil: Math.min(100, item.soil + (crops[item.crop]?.soil > 0 ? 3 : 0)), water: Math.min(100, item.water + 8) }))
+    announce(`Plot ${id} harvested. Soil and water updated.`)
+  }
+  const reset = () => { setFarm({ ...initial, plots: starterPlots.map((plot) => ({ ...plot })), selected: 'A2' }); announce('Experiment reset to the demo baseline.') }
+  const chooseStrategy = (strategy) => {
+    setFarm((previous) => ({ ...previous, strategy, plots: previous.plots.map((plot, index) => {
+      if (!plot.crop) return plot
+      if (strategy === 'water') return { ...plot, crop: index % 2 === 0 ? 'Sorghum' : 'Cover crop', water: Math.min(100, plot.water + 18), health: Math.min(100, plot.health + 4) }
+      if (strategy === 'soil') return { ...plot, crop: index % 2 === 0 ? 'Soybean' : 'Cover crop', soil: Math.min(100, plot.soil + 9), health: Math.min(100, plot.health + 3) }
+      return { ...plot, ...starterPlots[index] }
+    }) }))
+    setView('farm'); announce(`${strategies.find((item) => item.id === strategy)?.name} applied to your farm.`)
+  }
+  const applyMission = (mission) => {
+    const strategy = mission.label === 'Water stress' ? 'water' : mission.label === 'Soil health' ? 'soil' : 'water'
+    setFarm((previous) => ({ ...previous, location: mission.place, rainfall: strategy === 'water' ? 24 : 46, temperature: mission.label === 'Heat stress' ? 35 : 29, strategy, plots: previous.plots.map((plot, index) => ({ ...plot, crop: index % 2 ? 'Cover crop' : strategy === 'water' ? 'Sorghum' : 'Soybean', water: strategy === 'water' ? Math.max(24, plot.water - 18) : plot.water, soil: strategy === 'soil' ? Math.min(100, plot.soil + 8) : plot.soil })) }))
+    setView('farm'); announce(`${mission.title} mission loaded. Your farm is now in the scenario.`)
+  }
+  const saveSetup = (event) => { event.preventDefault(); setFarm((previous) => ({ ...previous, ...farmDraft, area: Number(farmDraft.area) || 48, started: true })); setShowSetup(false); announce('Farm details saved.') }
+  const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter']
+  const renderPlot = (plot) => <button key={plot.id} type="button" onClick={() => setFarm((prev) => ({ ...prev, selected: plot.id }))} className={`field-plot ${plot.crop ? `crop-${crops[plot.crop].color}` : 'empty'} ${farm.selected === plot.id ? 'selected' : ''} ${plot.water < 38 ? 'stressed' : ''}`} aria-label={`Plot ${plot.id}, ${plot.crop || 'empty'}, ${plot.crop ? stages[plot.growth] : 'ready to plant'}`}>
+    <span className="plot-id">{plot.id}</span>
+    <span className={`crop-illustration stage-${plot.growth}`} aria-hidden="true">{plot.crop ? <><i /><i /><i /><b /></> : <span className="plus">+</span>}</span>
+    <span className="plot-label">{plot.crop || 'Open plot'}</span>
+    {plot.crop && <span className="plot-stage">{stages[plot.growth]}</span>}
+    {plot.water < 38 && <span className="stress-mark">Low water</span>}
+  </button>
+  return <div className="app-shell">
+    <aside className="sidebar">
+      <a className="brand" href="#farm" onClick={(event) => { event.preventDefault(); setView('farm') }}><span className="brand-mark"><span /></span><span><b>space<span>soil</span></b><small>FARM SIMULATOR</small></span></a>
+      <div className="farm-switch"><span className="farm-avatar">W</span><span><b>{farm.farmName}</b><small>{farm.location}</small></span><button aria-label="Edit farm details" onClick={() => setShowSetup(true)}>⌄</button></div>
+      <nav aria-label="Main navigation" className="main-nav">{navItems.map(([id, label, icon]) => <button key={id} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon>{icon}</Icon>{label}{id === 'missions' && <span className="nav-count">3</span>}</button>)}</nav>
+      <div className="sidebar-bottom"><div className="season-mini"><span className="sun-icon">☀</span><div><b>{seasonNames[farm.season - 1]} {farm.year}</b><small>Growing season</small></div><span className="live-dot" /></div><button className="sidebar-reset" onClick={reset}>↺ <span>Reset experiment</span></button><div className="sidebar-footer"><span className="footer-avatar">PT</span><span><b>Plot Twist</b><small>NASA Space Apps 2026</small></span><span className="more">···</span></div></div>
+    </aside>
+    <main className="main-content">
+      <header className="topbar"><div className="breadcrumbs">My farm <span>/</span> <b>{navItems.find(([id]) => id === view)?.[1]}</b></div><div className="top-actions"><span className="demo-badge"><i /> Simulated demo</span><button className="icon-button" aria-label="Notifications">♧</button><button className="profile-button" aria-label="Profile">PT</button></div></header>
+      <div className="page-content">
+        {view === 'farm' && <>
+          <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot" /> YOUR FARM, YOUR FUTURE</div><h1>Good morning, farmer.</h1><p>Small choices today can grow a more resilient harvest tomorrow.</p></div><button className="outline-button" onClick={() => setShowSetup(true)}>⚙ <span>Farm settings</span></button></div>
+          <section className="farm-banner"><div className="weather-label"><span>◉</span> FIELD CONDITIONS <b>·</b> SIMULATED</div><div className="weather-readings"><div><span className="weather-icon rain">☂</span><div><b>{farm.rainfall}<small> mm</small></b><span>Seasonal rainfall</span></div></div><div><span className="weather-icon temp">☼</span><div><b>{farm.temperature}<small>°C</small></b><span>Avg. temperature</span></div></div><div className="weather-context"><span className="weather-sun">☀</span><div><b>{farm.rainfall < 35 ? 'Dry spell' : 'Warm & clear'}</b><span>{farm.rainfall < 35 ? 'Watch your water' : 'Good growing weather'}</span></div></div></div><span className="banner-decoration decor-one"/><span className="banner-decoration decor-two"/><span className="banner-skyline">☁</span></section>
+          <div className="section-title"><div><h2>Your fields</h2><span className="section-subtitle">Select a plot to see what it needs</span></div><div className="section-actions"><span className="season-chip"><span>☼</span> {seasonNames[farm.season - 1]} · Year {farm.year}</span><button className="primary-button" onClick={advanceSeason}><span>◷</span> Advance season <span>→</span></button></div></div>
+          <div className="farm-layout"><section className="farm-scene" aria-label="Interactive farm plots"><div className="scene-header"><div className="scene-trees">♣ <span>♣</span> ♣</div><div className="scene-title"><b>{farm.farmName}</b><span>{farm.area} acres · {farm.soilType}</span></div><div className="scene-tools"><span>⌖ {farm.irrigation}</span><button onClick={() => setShowSetup(true)} aria-label="Edit farm">↗</button></div></div><div className="field-grid-wrap"><div className="field-grid">{farm.plots.map(renderPlot)}</div><div className="field-path"><span>••••••••••••••••••••••••••••••••</span></div><div className="scene-landscape"><span className="barn">▰</span><span className="water-tank"><i /></span><span className="tree tree-a">♣</span><span className="tree tree-b">♣</span><span className="crop-row">⌁ ⌁ ⌁</span><span className="water-label">WATER<br />STORE</span></div></div><div className="scene-legend"><span><i className="legend-crop"/>Growing crops</span><span><i className="legend-empty"/>Open plot</span><span><i className="legend-stress"/>Needs attention</span><button onClick={() => setView('science')}>How simulation works ↗</button></div></section>
+            <aside className="plot-panel"><div className="panel-top"><span className="panel-kicker">FIELD DETAILS</span><button aria-label="More field details">···</button></div><div className="plot-heading"><span className="plot-symbol">{selectedPlot.crop ? '✳' : '+'}</span><div><h3>Plot {selectedPlot.id}</h3><span>{selectedPlot.crop ? `${crops[selectedPlot.crop].days} day crop` : 'Ready for planting'}</span></div></div>{selectedPlot.crop ? <><div className="crop-summary"><b>{selectedPlot.crop}</b><span className={`health-pill ${selectedPlot.health < 60 ? 'warning' : ''}`}><i /> {selectedPlot.health < 60 ? 'Needs care' : 'Looking good'}</span></div><div className="growth-track"><div className="growth-line"><span style={{ width: `${(selectedPlot.growth / 5) * 100}%` }} /></div><div className="growth-labels"><span>Planted</span><b>{stages[selectedPlot.growth]}</b><span>Harvest</span></div></div></> : <div className="empty-hint">This plot is resting. Plant a crop to begin a new growing cycle.</div>}
+            <div className="field-stats"><div><div className="stat-head"><span>Soil health</span><b>{selectedPlot.soil}<small>/100</small></b></div><div className="stat-track"><i className="soil-fill" style={{ width: `${selectedPlot.soil}%` }} /></div></div><div><div className="stat-head"><span>Water available</span><b>{selectedPlot.water}<small>/100</small></b></div><div className="stat-track"><i className="water-fill" style={{ width: `${selectedPlot.water}%` }} /></div></div><div className="plot-note"><span>✦</span><p>{selectedPlot.crop ? crops[selectedPlot.crop].note : 'Resting plots naturally recover a little soil and water each season.'}</p></div></div>
+            {selectedPlot.crop && selectedPlot.growth >= 4 ? <button className="harvest-button" onClick={() => harvest(selectedPlot.id)}>Harvest plot <span>↗</span></button> : <button className="plant-button" onClick={() => setView('plant')}>{selectedPlot.crop ? 'Change crop' : 'Choose a crop'} <span>→</span></button>}
+            </aside></div>
+          <div className="dashboard-bottom"><section className="goal-card"><div className="card-heading"><div><span className="mini-label">FARM SNAPSHOT</span><h3>Growing in balance</h3></div><button onClick={() => setView('strategies')}>Explore strategies ↗</button></div><div className="metric-row"><div className="metric"><span className="metric-icon water-bg">≈</span><div><span>Water use</span><b>{waterUse}<small> / 100</small></b></div><span className="metric-caption">{farm.strategy === 'water' ? '−24% vs. baseline' : 'Seasonal estimate'}</span></div><div className="metric"><span className="metric-icon soil-bg">⌁</span><div><span>Soil health</span><b>{avgSoil}<small> / 100</small></b></div><span className="metric-caption">{avgSoil >= 75 ? 'Healthy range' : 'Room to improve'}</span></div><div className="metric"><span className="metric-icon yield-bg">↗</span><div><span>Crop condition</span><b>{avgHealth}<small> / 100</small></b></div><span className="metric-caption">Across {farm.plots.length} plots</span></div></div></section><section className="advisor-card"><div className="advisor-avatar"><span>✦</span><i /></div><div className="advisor-copy"><span className="mini-label">YOUR FARM ADVISOR</span><b>Hey, looking at your fields…</b><p>{advisor}</p><button onClick={() => setView('science')}>Why am I seeing this? <span>→</span></button></div><span className="advisor-spark">✳</span></section></div>
+          <footer className="page-footer"><span>SpaceSoil <b>·</b> A new perspective on the ground beneath us.</span><span>By Plot Twist <b>·</b> NASA Space Apps 2026</span></footer>
+        </>}
+        {view === 'plant' && <section className="subpage"><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> GROW WITH INTENTION</div><h1>Plant & grow</h1><p>Every crop is a choice. Find the right fit for your fields this season.</p></div><button className="outline-button" onClick={() => setView('farm')}>← Back to farm</button></div><div className="plant-layout"><div className="crop-library"><div className="subsection-head"><div><h2>Choose a crop</h2><span className="section-subtitle">Planting in <b>Plot {farm.selected}</b></span></div></div><div className="crop-grid">{Object.entries(crops).map(([name, crop]) => <button key={name} className={`crop-card ${cropChoice === name ? 'chosen' : ''}`} onClick={() => setCropChoice(name)}><div className={`crop-art ${crop.color}`}><span>✳</span><i/><i/><i/></div><div className="crop-card-name"><b>{name}</b>{cropChoice === name && <span>Selected</span>}</div><p>{crop.note}</p><div className="crop-facts"><span>◌ {crop.water} water</span><span>◷ {crop.days} days</span></div><div className="crop-soil">Soil impact <b className={crop.soil > 0 ? 'positive' : ''}>{crop.soil > 0 ? '+' : ''}{crop.soil} pts</b></div></button>)}</div></div><aside className="plant-aside"><span className="mini-label">BEFORE YOU PLANT</span><h3>Match the crop to the conditions</h3><p>Crop values are simplified prototype assumptions, not precise agricultural recommendations.</p><div className="condition-row"><span>Seasonal rainfall</span><b>{farm.rainfall} mm</b></div><div className="condition-row"><span>Average temperature</span><b>{farm.temperature}°C</b></div><div className="condition-row"><span>Current soil health</span><b>{selectedPlot.soil}/100</b></div><button className="plant-button" onClick={() => { plantSelected(); setView('farm') }}>Plant {cropChoice} in {farm.selected} <span>→</span></button><button className="text-action" onClick={() => setView('farm')}>Select a different plot</button></aside></div></section>}
+        {view === 'strategies' && <section className="subpage"><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> EXPERIMENT, LEARN, ADAPT</div><h1>Explore strategies</h1><p>Try a different approach. Your farm will change with it.</p></div><button className="outline-button" onClick={reset}>↺ Reset baseline</button></div><div className="strategy-intro"><span>✦</span><p>Compare trade-offs across water, soil, crop condition, and yield potential. These simulated outcomes are illustrative, not validated forecasts.</p></div><div className="strategy-grid">{strategies.map((item) => <article className={`strategy-card ${farm.strategy === item.id ? 'current' : ''}`} key={item.id}><div className="strategy-card-top"><span className="strategy-icon">{item.id === 'water' ? '≈' : item.id === 'soil' ? '⌁' : '◈'}</span><span className="strategy-tag">{farm.strategy === item.id ? 'Active on farm' : item.tag}</span></div><h3>{item.name}</h3><p>{item.detail}</p><div className="strategy-stats"><div><span>Water</span><b>{item.water}</b></div><div><span>Soil</span><b>{item.soil}</b></div><div><span>Yield potential</span><b>{item.yield}</b></div></div><button className={farm.strategy === item.id ? 'strategy-active-button' : 'strategy-apply'} onClick={() => chooseStrategy(item.id)}>{farm.strategy === item.id ? 'Currently active' : 'Try this strategy'} {! (farm.strategy === item.id) && <span>→</span>}</button></article>)}</div><section className="priority-section"><div><span className="mini-label">WHAT MATTERS MOST TO YOU?</span><h2>Set your farm priorities</h2><p>Move the sliders to guide the advisor’s strategy explanations.</p></div><div className="priority-list">{Object.entries(farm.goals).map(([goal, value]) => <label className="priority-item" key={goal}><span><b>{goal === 'Income' ? 'Economic viability' : goal === 'Yield' ? 'Yield stability' : goal === 'Water' ? 'Water efficiency' : 'Soil health'}</b><small>{goal === 'Water' ? 'Use water thoughtfully' : goal === 'Soil' ? 'Build healthy ground' : goal === 'Yield' ? 'Protect harvest reliability' : 'Keep the farm viable'}</small></span><input aria-label={`${goal} priority`} type="range" min="1" max="5" value={value} onChange={(event) => setFarm((prev) => ({ ...prev, goals: { ...prev.goals, [goal]: Number(event.target.value) } }))}/><b>{value}</b></label>)}</div></section></section>}
+        {view === 'missions' && <section className="subpage"><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> FIELD NOTES FROM AROUND THE WORLD</div><h1>Missions</h1><p>Step into a real-world challenge and see how your decisions shape a farm.</p></div><span className="demo-badge"><i/> SIMULATED SCENARIOS</span></div><div className="mission-feature"><span className="mission-sun">☼</span><div><span className="mini-label">LEARN BY DOING</span><h2>Every field has a story.</h2><p>Take on a challenge, try different decisions, and watch your farm respond.</p></div></div><div className="mission-grid">{missions.map((mission, index) => <article key={mission.title} className="mission-card"><div className={`mission-art mission-art-${index}`}><span className="mission-cloud">☁</span><span className="mission-land">⌁⌁⌁⌁</span><span className="mission-icon">{mission.icon}</span><span className="mission-number">0{index + 1}</span></div><div className="mission-body"><span className="mission-label">{mission.label}</span><h3>{mission.title}</h3><span className="mission-place">⌖ {mission.place}</span><p>{mission.text}</p><button onClick={() => applyMission(mission)}>Play this mission <span>→</span></button></div></article>)}</div></section>}
+        {view === 'science' && <section className="subpage"><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> THE SCIENCE UNDER THE SOIL</div><h1>Science & data</h1><p>Understand what the indicators mean—and what they don’t.</p></div><span className="demo-badge"><i/> DATA TRANSPARENCY</span></div><div className="science-banner"><div><span className="mini-label">IMPORTANT TO KNOW</span><h2>Demo values are simulated.</h2><p>This prototype does not currently connect to live NASA feeds. The game uses illustrative values to demonstrate how environmental conditions can influence farming decisions.</p></div><span className="science-orbit">◉</span></div><div className="science-grid"><article className="science-card"><div className="science-card-head"><span className="data-mark blue">≈</span><span className="source-pill simulated">Simulated</span></div><h3>Soil moisture</h3><span className="science-source">Concept: SMAP</span><p>Soil moisture describes water held in the soil. It helps indicate whether crops may be able to access water around their roots.</p><div className="science-current"><span>Current game value</span><b>{selectedPlot.water}<small> / 100</small></b></div></article><article className="science-card"><div className="science-card-head"><span className="data-mark amber">☼</span><span className="source-pill simulated">Simulated</span></div><h3>Land surface temperature</h3><span className="science-source">Concept: ECOSTRESS</span><p>Surface temperature can help identify heat conditions that may increase crop water demand or stress sensitive plants.</p><div className="science-current"><span>Current game value</span><b>{farm.temperature}<small>°C</small></b></div></article><article className="science-card"><div className="science-card-head"><span className="data-mark mint">☂</span><span className="source-pill simulated">Simulated</span></div><h3>Precipitation</h3><span className="science-source">Concept: GPM</span><p>Rainfall affects available water, though where and when rain falls matters as much as the seasonal total.</p><div className="science-current"><span>Current game value</span><b>{farm.rainfall}<small> mm</small></b></div></article><article className="science-card"><div className="science-card-head"><span className="data-mark green">✳</span><span className="source-pill concept">Indicator concept</span></div><h3>Vegetation health</h3><span className="science-source">Concept: NDVI · Landsat / MODIS</span><p>Vegetation indices compare reflected light at different wavelengths. They can help monitor vegetation, but are not a direct measure of yield.</p><div className="science-current"><span>Crop condition proxy</span><b>{selectedPlot.health}<small> / 100</small></b></div></article></div><section className="method-note"><span>ⓘ</span><div><b>A transparent prototype model</b><p>Each season, crop stage advances, rainfall replenishes water, crop water needs draw it down, and low water or high heat can lower crop condition. Soil scores shift based on crop type and rotation. These simple rules are educational examples—not a validated agronomic model. Actual NASA observations are not loaded in this demo.</p><button onClick={() => advanceSeason()}>Advance season to see changes →</button></div></section></section>}
+      </div>
+    </main>
+    {showSetup && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowSetup(false) }}><form className="setup-modal" onSubmit={saveSetup}><div className="modal-heading"><div><span className="mini-label">YOUR LITTLE CORNER OF EARTH</span><h2>Farm settings</h2></div><button type="button" aria-label="Close" onClick={() => setShowSetup(false)}>×</button></div><label>Farm name<input value={farmDraft.farmName} onChange={(event) => setFarmDraft({ ...farmDraft, farmName: event.target.value })} required/></label><label>Location<input value={farmDraft.location} onChange={(event) => setFarmDraft({ ...farmDraft, location: event.target.value })}/></label><div className="form-row"><label>Farm area (acres)<input type="number" min="1" value={farmDraft.area} onChange={(event) => setFarmDraft({ ...farmDraft, area: event.target.value })}/></label><label>Soil type<select value={farmDraft.soilType} onChange={(event) => setFarmDraft({ ...farmDraft, soilType: event.target.value })}><option>Loam</option><option>Clay</option><option>Sandy</option><option>Silt</option></select></label></div><label>Irrigation method<select value={farmDraft.irrigation} onChange={(event) => setFarmDraft({ ...farmDraft, irrigation: event.target.value })}><option>Drip irrigation</option><option>Sprinkler</option><option>Rain-fed</option><option>Furrow irrigation</option></select></label><div className="form-note">Demo farm information is saved only in this browser.</div><button className="primary-button" type="submit">Save farm details <span>→</span></button></form></div>}
+    {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
+  </div>
+}
 export default App
